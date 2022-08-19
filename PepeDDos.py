@@ -75,7 +75,7 @@ referers = [
 	"https://www.google.co.ao/search?q=",
 ]
 
-
+mode = "cc"
 url = ""
 proxy_ver = "5"
 brute = False
