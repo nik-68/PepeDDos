@@ -865,7 +865,7 @@ elif sys.platform.startswith("freebsd"):
 else:
    os.system('color ' +random.choice(['B'])+ " & cls & title Tools DDoS IrgyNW [ DDoS Attack ]")
 print()
-print(""
+print('''
 ⣿⣿⣿⣿⣿⡿⠛⠋⠁⠀⠀⠀⠀⠙⠛⠿⠟⠋⠉⠁⠀⠈⠙⠻⣿⣿⣿⣿⣿⣿  
 ⣿⣿⣿⡿⠋⠀⠸⠄⢀⣀⠠⠤⠤⣀⡀⠐⡄⠀⠀⠀⠀⠀⠾⠂⠈⠻⣿⣿⣿⣿
 ⣿⣿⡟⠀⠀⠀⠠⠋⠁⠀⠀⠀⠀⠀⠉⠙⠻⠒⠚⠛⠛⠛⠛⠒⠒⠦⠘⢿⣿⣿
@@ -886,7 +886,7 @@ print(""
  Данный не замысловатый скрипт,
  поможет вам уронить любой сайт!
 '''))
-print("\033[36m====================")
+print("\033[36m========================")
 ip = str(input("[+] Target IP : => "))
 port = int(input("[+] Port : => "))
 method_attack = str(input("[+] Method [Get/Post/Head] : => "))
